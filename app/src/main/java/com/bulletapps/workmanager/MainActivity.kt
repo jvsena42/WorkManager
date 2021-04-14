@@ -5,10 +5,8 @@ import android.os.Bundle
 import android.widget.Button
 import android.widget.TextView
 import android.widget.Toast
-import androidx.work.Constraints
-import androidx.work.Data
-import androidx.work.OneTimeWorkRequest
-import androidx.work.WorkManager
+import androidx.work.*
+import java.util.concurrent.TimeUnit
 
 class MainActivity : AppCompatActivity() {
 
@@ -26,7 +24,8 @@ class MainActivity : AppCompatActivity() {
         textView = findViewById(R.id.textView)
 
         button.setOnClickListener {
-            setOneTimeWorkRequest()
+//            setOneTimeWorkRequest()
+            setPeriodicWorkRequest()
         }
     }
 
@@ -57,7 +56,7 @@ class MainActivity : AppCompatActivity() {
             .then(compressingRequest)
             .then(uploadRequest)
             .enqueue()
-        
+
         workManager.getWorkInfoByIdLiveData(uploadRequest.id).observe(this, {
             textView.text = it.state.name
 
@@ -68,5 +67,15 @@ class MainActivity : AppCompatActivity() {
             }
         })
 
+    }
+
+    private fun setPeriodicWorkRequest(){
+
+        val workManager = WorkManager.getInstance(applicationContext)
+
+        val periodicWorkRequest = PeriodicWorkRequest.Builder(CompressingWorker::class.java,16,TimeUnit.MINUTES)
+            .build()
+
+        workManager.enqueue(periodicWorkRequest)
     }
 }
